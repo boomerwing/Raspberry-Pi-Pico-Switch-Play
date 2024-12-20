@@ -1,5 +1,5 @@
 # Raspberry-Pi-Pico-Switch-Play
-This Raspberry-Pi Pico FreeRTOS sumulation measures a voltage and displays a result on a seven seg LED.  There is an alarm boundary which blinks the LED if the boundary is crossed.
+This Raspberry-Pi Pico FreeRTOS sumulation measures a voltage and displays a result on a seven seg LED.  There is an alarm boundary at an ADC value of 0x800.  If the input ADC level drops below 0x800 the LED will blink.  If the input value increases above 08x00 the LED will continue to blink until a switch is presses to acknowledge the "failure".
 
 The active components are the PICO, A 16 port PCF8575 port extender, a Seven Segment LED, two LEDs, eight switches and a potentiometer to create the input voltage to be read by the ADC and displayed.
 
