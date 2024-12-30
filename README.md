@@ -7,3 +7,4 @@ Four tasks provide the functionality: adc task, blink task, gpio led task and sw
 
 As an interesting use of the switch outputs, the speed of the blink is changed by the state of switches sw0 and sw1 to create four different blink rates.
 
+This exercise has its foundation in the work of https://github.com/smittytone/RP2040-FreeRTOS
