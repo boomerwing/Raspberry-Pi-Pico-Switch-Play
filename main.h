@@ -89,6 +89,9 @@ extern "C" {
 #define			A3_PIN	              29
 #define         Feather_LED_PIN       13
 #define         PICO_LED_PIN          25
+#define			D14			      	  14
+#define			D15			      	  15
+#define			G16			      	  16
 
 // Set a delay time of exactly 500ms
 const TickType_t ms_delay5  =    5 / portTICK_PERIOD_MS;
