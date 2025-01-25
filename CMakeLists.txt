@@ -1,36 +1,69 @@
 cmake_minimum_required(VERSION 3.14)
 
-# Should we set app-level debugging?
-# NOTE Equivalent of `#define DEBUG 1`
-if(${DO_DEBUG})
-    add_compile_definitions(DEBUG=1)
-    message(STATUS "App-side debugging set")
-else()
-    message(STATUS "App-side debugging disabled")
-endif()
+# Set project data
+set(PROJECT_NAME "RP2040_FREERTOS_PROJECT")
+set(BUILD_NUMBER "0")
 
-# Make project data accessible to compiler
-add_compile_definitions(APP_NAME="${APP_2_NAME}")
-add_compile_definitions(APP_VERSION="${APP_2_VERSION_NUMBER}")
-add_compile_definitions(BUILD_NUM=${BUILD_NUMBER})
+# Set app name(s) and version(s)
+set(APP_1_NAME "SWITCH_DEMO")
+set(APP_1_VERSION_NUMBER "0.1.0")
 
-# Include app source code file(s)
-add_executable(${APP_2_NAME}
-    ${APP_2_SRC_DIRECTORY}/main_i2c.c
-    ${COMMON_CODE_DIRECTORY}/Seven_Seg_i2c/seven_seg.c
-    ${COMMON_CODE_DIRECTORY}/pcf8575i2c.c
+# Specify the app(s) source code
+set(APP_1_SRC_DIRECTORY "${CMAKE_SOURCE_DIR}/App-SW")
+
+# FROM 1.3.0 -- Move common source code to a separate directory
+# set(COMMON_CODE_DIRECTORY "${CMAKE_SOURCE_DIR}/Common-Feather")
+set(COMMON_CODE_DIRECTORY "${CMAKE_SOURCE_DIR}/Common")
+
+# Set app-side debugging "ON" or "OFF"
+set(DO_DEBUG "OFF")
+
+# Set env variable 'PICO_SDK_PATH' to the local Pico SDK
+# Comment out the set() if you have a global copy of the
+# SDK set and $PICO_SDK_PATH defined in your $PATH
+# set(ENV{PICO_SDK_PATH} "${CMAKE_SOURCE_DIR}/pico-sdk")
+
+# Set flags and directory variables
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DTSDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DTSDEBUG")
+set(FREERTOS_SRC_DIRECTORY "~/FreeRTOS-Kernel")
+set(FREERTOS_CFG_DIRECTORY "${FREERTOS_SRC_DIRECTORY}/Config")
+
+# Include the Pico SDK
+include(pico_sdk_import.cmake)
+
+# Name the project
+project(${PROJECT_NAME}
+        LANGUAGES C CXX ASM
+        DESCRIPTION "FreeRTOS-based RP2040 applications"
 )
 
-# Link to built libraries
-target_link_libraries(${APP_2_NAME} LINK_PUBLIC
-    pico_stdlib
-    hardware_i2c
-    hardware_adc
-    FreeRTOS)
+# Initialise the Pico SDK
+pico_sdk_init()
 
-# Enable/disable STDIO via USB and UART
-pico_enable_stdio_usb(${APP_2_NAME} 1)
-pico_enable_stdio_uart(${APP_2_NAME} 0)
+# Add FreeRTOS as a library
+add_library(FreeRTOS STATIC
+    ${FREERTOS_SRC_DIRECTORY}/event_groups.c
+    ${FREERTOS_SRC_DIRECTORY}/list.c
+    ${FREERTOS_SRC_DIRECTORY}/queue.c
+    ${FREERTOS_SRC_DIRECTORY}/stream_buffer.c
+    ${FREERTOS_SRC_DIRECTORY}/tasks.c
+    ${FREERTOS_SRC_DIRECTORY}/timers.c
+    ${FREERTOS_SRC_DIRECTORY}/portable/MemMang/heap_3.c
+    ${FREERTOS_SRC_DIRECTORY}/portable/GCC/ARM_CM0/port.c
+)
 
-# Enable extra build products
-pico_add_extra_outputs(${APP_2_NAME})
+# Build FreeRTOS
+target_include_directories(FreeRTOS PUBLIC
+    ${FREERTOS_CFG_DIRECTORY}/
+    ${FREERTOS_SRC_DIRECTORY}/include
+    ${FREERTOS_SRC_DIRECTORY}/portable/GCC/ARM_CM0
+)
+
+# Include the apps' source code
+add_subdirectory(${APP_1_SRC_DIRECTORY})
+
+# Clean up
+unset(FREERTOS_CFG_DIRECTORY)
+unset(FREERTOS_SRC_DIRECTORY)
+unset(APP_SRC_DIRECTORY)
